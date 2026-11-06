@@ -1,6 +1,8 @@
-# Notes
+# iOS 16 on daisy (Xiaomi Mi A2 Lite, MSM8953)
 
-Running log for ios-daisy. Newest entries at the top.
+## 06-11-2026, 20:50 UTC+4, Baku
+
+i havent started but tomorrow it is the weekends plus monday and tuesday are my dayoff cuz its victory day and national flag day ill update yall soon
 
 ## Device facts (Mi A2 Lite, daisy)
 - SoC: Snapdragon 625 (MSM8953), 8x Cortex-A53
@@ -20,9 +22,4 @@ Running log for ios-daisy. Newest entries at the top.
 - Does the stock bootloader accept `fastboot boot` of a custom image? Which format?
 - Is lk2nd usable as a way to start our own code?
 
-## Log
-# iOS 16 on daisy (Xiaomi Mi A2 Lite, MSM8953)
 
-## 06-11-2026, 20:50 UTC+4, Baku
-
-i havent started but tomorrow it is the weekends plus monday and tuesday are my dayoff cuz its victory day and national flag day ill update yall soon
