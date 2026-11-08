@@ -14,10 +14,13 @@ its time to work on BuildManifest.plist i just extracted the .ipsw file and ther
 
 ## Device facts (Mi A2 Lite, daisy)
 - SoC: Snapdragon 625 (MSM8953), 8x Cortex-A53
-- RAM: 3 or 4 GB (TODO: confirm mine)
-- Storage: eMMC (TODO: confirm with Linux dump)
-- Bootloader: unlocked
+- Storage: eMMC (fastboot: variant QRD eMMC)
+- Bootloader: LK, MSM8953_DAISY2.0_20210630163634, unlocked
+- Slots: A/B (current: b); boot_a/boot_b 64 MiB each
+- fastboot max-download-size: 0x1fe00000 (~510 MiB)
+- Userdata: ~22 GiB
 - Currently runs: LineageOS 22.2
+- RAM: TODO (adb shell cat /proc/meminfo)
 
 ## Hardware references
 - msm8953-mainline Linux sources (device tree for memory map, interrupt
