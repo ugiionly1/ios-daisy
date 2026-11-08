@@ -27,6 +27,16 @@ its time to work on BuildManifest.plist i just extracted the .ipsw file and ther
   controller, display, touch, eMMC)
 - postmarketOS xiaomi-daisy and lk2nd
 
+### Hardware confirmed (2026-11-08)
+
+- RAM: ~2.75 GB usable
+  - Main: 0x40000000 – 0x849FFFFF
+  - Extra: 0x86800000 – 0x86BFFFFF
+  - High:  0x8EF00000 – 0xFFFFFFFF
+- Interrupt controller: GICv2 (mpm-gic)
+- Bootloader: Stock LK accepts `fastboot boot` of page-size 2048 images
+- eMMC controller: 7824900.sdhci
+
 ## Open questions
 - Can a 4K-page XNU run on Cortex-A53, and does iOS 16 userland tolerate it?
 - Which interrupt controller driver does XNU need (GICv2)?
