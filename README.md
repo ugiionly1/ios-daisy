@@ -71,3 +71,5 @@ servers on your own machine. Not affiliated with or endorsed by Apple.
 ## License
 
 TODO: choose after checking the licenses of the projects above.
+
+ALSO: i used to make my own os it was SarventeOS for g350e and daisy (daisy got stuck on bootloop and softbricked it) under development
