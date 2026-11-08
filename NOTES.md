@@ -12,6 +12,12 @@ I downloaded the .ipsw file from ipws.me and the internet locked in it was 6.17g
 
 its time to work on BuildManifest.plist i just extracted the .ipsw file and theres 10 file and 1 folder called Firmwares out of 10 files 5 of em is .dmg file and the others are .plist
 
+## 08-11-2026, 19:14 UTC+4, Baku
+
+`fastboot boot boot_b.img` (stock LineageOS boot image: header v0,
+  page size 2048, appended DTB) boots from RAM on this LK bootloader. First
+  milestone reached. Partitions backed up and verified beforehand.
+
 ## Device facts (Mi A2 Lite, daisy)
 - SoC: Snapdragon 625 (MSM8953), 8x Cortex-A53
 - Storage: eMMC (fastboot: variant QRD eMMC)
