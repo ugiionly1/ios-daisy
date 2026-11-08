@@ -14,9 +14,13 @@ its time to work on BuildManifest.plist i just extracted the .ipsw file and ther
 
 ## 08-11-2026, 19:14 UTC+4, Baku
 
-`fastboot boot boot_b.img` (stock LineageOS boot image: header v0,
+1st milestone `fastboot boot boot_b.img` (stock LineageOS boot image: header v0,
   page size 2048, appended DTB) boots from RAM on this LK bootloader. First
   milestone reached. Partitions backed up and verified beforehand.
+
+  2nd milestone: repacked boot_b.img with one extra cmdline word via a Python
+  script; `fastboot boot` accepted it and the word appeared in /proc/cmdline.
+  LK does not reject an edited (unsigned) image: verifiedbootstate=orange.
 
 ## Device facts (Mi A2 Lite, daisy)
 - SoC: Snapdragon 625 (MSM8953), 8x Cortex-A53
@@ -32,6 +36,11 @@ its time to work on BuildManifest.plist i just extracted the .ipsw file and ther
 - msm8953-mainline Linux sources (device tree for memory map, interrupt
   controller, display, touch, eMMC)
 - postmarketOS xiaomi-daisy and lk2nd
+
+## Hardware seen in the stock cmdline
+- Display: Himax HX8399C FHD+ video-mode DSI panel, single DSI, MDP (mdss_mdp)
+- Storage: eMMC, sdhci 7824900, system on /dev/mmcblk0p57
+- Debug UART: msm_hsl_uart at 0x78af000
 
 ### Hardware confirmed (2026-11-08)
 
