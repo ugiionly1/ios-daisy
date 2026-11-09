@@ -52,6 +52,7 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+- 2026-11-09: extracted boot_b.img now i have kernel and ramdisk.img i made them kernel_raw and ramdisk_raw there is no DTB Magic
 - 2026-11-08: backed up boot_a/b, aboot_a/b, persist, modemst1/2, fsg (sizes verified);
   both milestones above reached.
 - 2026-11-08: extracted the IPSW; BuildManifest lists two device classes (d22ap, d221ap).
