@@ -65,6 +65,67 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+### 2026-11-10 — Android Ramdisk and Init Analysis
+- Confirmed `ramdisk.img` is gzip-compressed.
+- Decompressed ramdisk size: 35,113,472 bytes.
+- Identified the archive format as CPIO newc (`070701`).
+- Listed the first 40 archive entries and identified important startup components, including `init`, `first_stage_ramdisk/`, `fstab.qcom`, `default.prop`, `bin/`, and `odm/`.
+- Confirmed the top-level `init` entry is a symbolic link to `/system/bin/init`.
+- Located `system/bin/init` inside the CPIO archive.
+- Verified its file size is 2,693,872 bytes and permissions are `100755`.
+- Confirmed the executable has ELF magic `7F 45 4C 46`.
+- Parsed its ELF header:
+  - ELF class: 64-bit
+  - Endianness: little-endian
+  - Machine ID: 183 (`EM_AARCH64`)
+  - Entry point: `0xBD000`
+- Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625.
+
+**Current status:** Android ramdisk structure and init executable identified. Dynamic linker and executable dependencies remain to be investigated. No XNU code has been booted or executed on the device.
+- 2026-11-10: mapped all 13 live device-tree memory-region
+  references to their corresponding reserved-memory nodes
+  using big-endian phandle values.
+- 2026-11-10: identified seven reusable device-linked
+  shared-DMA pools with a combined requested size of
+  228 MiB.
+- 2026-11-10: added the 20 MiB default linux,cma pool
+  to the inventory, giving a combined declared pool size
+  of 248 MiB.
+- 2026-11-10: observed that the combined 248 MiB
+  declaration matches the runtime CmaTotal reported
+  by /proc/meminfo.
+- 2026-11-10: noted that CONFIG_CMA_AREAS is set to 7;
+  runtime initialization of the individual pools remains
+  to be independently verified.
+- 2026-11-10: identified `linux,cma` as the default
+  `shared-dma-pool` in the live device tree.
+- 2026-11-10: decoded its requested size as 20 MiB
+  with 4 MiB alignment. The `reusable` property is present.
+- 2026-11-10: inspected the live device tree's default
+  Linux CMA pool. `linux,cma` declares a 20 MiB allocation.
+- 2026-11-10: confirmed that the Linux `ramoops` platform
+  driver is bound to the device `91400000.ramoops`.
+- 2026-11-10: completed the ramoops investigation,
+  verifying its device-tree reservation, platform-driver
+  binding, mounted pstore filesystem, and exposed records.
+- 2026-11-10: inspected `/sys/fs/pstore` and found
+  `console-ramoops-0` (223,613 bytes) and
+  `pmsg-ramoops-0` (2,097,140 bytes).
+- 2026-11-10: confirmed that persistent ramoops records
+  are exposed by the running Linux system.
+- 2026-11-10: observed that the pmsg record size is
+  approximately 2 MiB, consistent with the device-tree
+  `pmsg-size` allocation.
+- 2026-11-10: confirmed that `pstore` is mounted at
+  `/sys/fs/pstore` on the running Android system.
+- 2026-11-10: correlated the mounted pstore filesystem
+  with the live device tree's `ramoops` reserved-memory
+  node at `0x91400000`.
+- 2026-11-10: confirmed that the live device tree identifies
+  the `0x91400000` persistent logging region as `ramoops`.
+- 2026-11-10: documented its 4 MiB reserved region,
+  1 MiB console buffer, 2 MiB persistent message buffer,
+  and 512 KiB record size.
 - 2026-11-10: inspected the live device tree's ramoops
   configuration at `0x91400000`.
 - 2026-11-10: confirmed a 4 MiB reserved region,
@@ -179,4 +240,3 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
   both milestones above reached.
 - 2026-11-08: extracted the IPSW; BuildManifest lists two device classes (d22ap, d221ap).
 - 2026-11-07: downloaded the iPhone X IPSW from ipsw.me.
-
