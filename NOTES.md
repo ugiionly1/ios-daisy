@@ -70,7 +70,7 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
   - Endianness: little-endian
   - Machine ID: 183 (`EM_AARCH64`)
   - Entry point: `0xBD000`
-- Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625.
+ Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625.
 - 2026-11-10: mapped all 13 live device-tree memory-region
   references to their corresponding reserved-memory nodes
   using big-endian phandle values.
