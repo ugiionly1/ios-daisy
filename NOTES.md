@@ -15,6 +15,19 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
   framebuffer 1080x2280, continuous splash; physical address TBD
 - Debug UART: msm_hsl_uart at 0x78af000 (earlycon)
 - Currently runs: LineageOS 22.2
+- DTB platform: Qualcomm Technologies, Inc. MSM8953 + PMI8950 QRD SKU3
+- DTB compatible: qcom,msm8953
+- CPU nodes: 8x arm,cortex-a53 (cpu@0-3 and cpu@100-103)
+- GPU: Qualcomm KGSL node `qcom,kgsl-3d0`; exact GPU model not specified in this DTB
+- Display subsystem: Qualcomm MDSS MDP (`qcom,mdss_mdp`) with MIPI-DSI controllers
+- Interrupt controller: `qcom,msm-qgic2`, with `qcom,mpm-gic-msm8953` support
+- Storage controllers: `sdhci@7824900` and `sdhci@7864900`; boot device is `7824900.sdhci`
+- Touchscreen DTB entries:
+  - Synaptics DSX I2C at 0x4b
+  - Goodix GT9xx at 0x5d
+  - FocalTech 5446 at 0x38
+  - These are alternative DTB entries; installed controller not confirmed
+- Kernel boot arguments from DTB `/chosen`: `core_ctl_disable_cpumask=0-7 kpti=0`
 
 ## Stock boot image (boot_b)
 - Header v0, page size 2048, appended DTB
@@ -52,6 +65,7 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+- 2026-11-10: investigated the device tree and identified additional hardware details, including the MSM8953 + PMI8950 platform, Cortex-A53 CPU configuration, KGSL GPU subsystem, MDSS display controllers, GICv2 interrupt controller, SDHCI storage controllers, and multiple touchscreen driver entries. Also examined the extracted `kernel_raw` and `ramdisk_raw`; no DTB magic (`0xd00dfeed`) was found in the inspected kernel data.
 - 2026-11-09: extracted boot_b.img now i have kernel and ramdisk.img i made them kernel_raw and ramdisk_raw there is no DTB Magic
 - 2026-11-08: backed up boot_a/b, aboot_a/b, persist, modemst1/2, fsg (sizes verified);
   both milestones above reached.
