@@ -65,6 +65,114 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+- 2026-11-10: inspected the live device tree's ramoops
+  configuration at `0x91400000`.
+- 2026-11-10: confirmed a 4 MiB reserved region,
+  a 1 MiB console buffer, a 2 MiB persistent message
+  buffer, and a 512 KiB record size.
+- 2026-11-10: inspected the live device tree's splash
+  reserved-memory region. It starts at `0x90001000`,
+  has a size of `0x013FF000` bytes (approximately 20 MiB),
+  and ends at `0x913FFFFF`.
+- 2026-11-10: observed that the splash reservation ends
+  immediately before the ramoops region at `0x91400000`.
+- 2026-11-10: decoded the GPU reserved-memory allocation range.
+  `gpu_region@0` requests 8 MiB with 4 MiB alignment,
+  within the allowed range `0x80000000-0x8FFFFFFF`
+  (256 MiB). Its actual allocated address remains unknown.
+- 2026-11-10: identified `gpu_region@0` as a dynamically
+  allocated reserved-memory node. Its requested allocation
+  size is 8 MiB; no fixed physical address is specified.
+- 2026-11-10: inspected the live device tree's WCNSS firmware
+  reserved-memory region. `wcnss_fw_region@0` starts at
+  `0x8E800000` and reserves `0x00700000` bytes (7 MiB).
+- 2026-11-10: confirmed that the live WCNSS reservation matches
+  the previously extracted device tree.
+- 2026-11-10: inspected the live device tree's ADSP firmware
+  reserved-memory region. `adsp_fw_region@0` starts at
+  `0x8D600000` and reserves `0x01200000` bytes (18 MiB).
+- 2026-11-10: confirmed that the live ADSP firmware reservation
+  matches the previously extracted device tree.
+- 2026-11-10: inspected the live device tree's modem reserved-memory
+  region. `modem_region@0` starts at `0x86C00000` and reserves
+  `0x06A00000` bytes (106 MiB).
+- 2026-11-10: confirmed that the live modem reservation matches
+  the corresponding region in the previously extracted device tree.
+- 2026-11-10: inspected the live device tree's
+  `qcom,mdss_dsi_hx8399c_fhdplus_video` node.
+  Its panel name is `hx8399c fhdplus video mode dsi panel`.
+- 2026-11-10: decoded the panel's big-endian device-tree
+  dimensions: 1080 pixels wide and 2280 pixels high.
+- 2026-11-10: cross-checked the live device-tree definition
+  against `/sys/class/graphics/fb0/msm_fb_panel_info`,
+  which reports the same HX8399C FHD+ panel configuration.
+- 2026-11-10: inspected the running framebuffer's Qualcomm-specific
+  `msm_fb_panel_info` attribute. The kernel reports
+  `panel_name=hx8399c fhdplus video mode dsi panel` and
+  `primary_panel=1`, identifying the active primary display
+  configuration as HX8399C FHD+.
+- 2026-11-10: confirmed the framebuffer panel type is
+  `mipi dsi video panel`. The runtime panel configuration matches
+  the device's reported 1080x2280 display resolution.
+- 2026-11-10: resolved the discrepancy between the extracted
+  device tree's preferred OTM1911 FHD reference and the running
+  kernel's panel information. The runtime framebuffer reports
+  HX8399C FHD+; the physical panel part number remains unverified.
+- 2026-11-10: inspected `/sys/class/tty` and `/proc/tty/drivers`.
+  The kernel has registered the `msm_serial_hs` TTY driver, but
+  no `ttyHS` devices are exposed.
+- 2026-11-10: checked `/dev/ttyHS*` and the
+  `/sys/bus/platform/drivers/msm_serial_hs` directory. No
+  high-speed UART device nodes or bound platform devices were found.
+- 2026-11-10: the UART platform device at `0x078AF000` remains
+  registered without a bound normal platform driver. Its actual
+  hardware operation and early-console output remain unverified.
+- 2026-11-10: verified the running kernel command line contains
+  `earlycon=msm_hsl_uart,0x78af000`, matching the enabled UARTDM
+  controller at `0x078AF000` in the extracted device tree.
+- 2026-11-10: checked `/proc/consoles`; `pstore0` is listed as a
+  registered console. No regular serial console is listed at runtime.
+  This does not rule out early UART output, which may be disabled after
+  normal console initialization.
+- 2026-11-10: confirmed the experimental boot argument
+  `ios_daisy_test=1` is present in the running kernel command line.
+- 2026-11-10: inspected the UART controller nodes in `daisy.dts`.
+  The Qualcomm UARTDM v1.4 controller at `0x078AF000` is marked
+  `status = "ok"` and has a default pinctrl configuration.
+  The UARTDM controller at `0x078B0000` and the listed BLSP high-speed
+  UART controllers are marked disabled.
+  The enabled controller is a potential debug-console candidate;
+  its actual use as the running Linux console has not yet been verified.
+- 2026-11-10: analyzed the extracted device tree (`daisy.dts`) and identified the
+  Qualcomm MSM8953 platform, including eight Cortex-A53 CPU nodes using PSCI.
+- 2026-11-10: identified the Qualcomm QGIC2 interrupt controller at
+  `0x0B000000`, with register regions at `0x0B000000` and `0x0B002000`.
+- 2026-11-10: inspected `/proc/iomem` on the running device and recorded
+  three System RAM ranges:
+  `0x40000000-0x849FFFFF`,
+  `0x86800000-0x86BFFFFF`, and
+  `0x8EF00000-0xFFFFFFFF`.
+- 2026-11-10: compared the physical memory map with the DTS reserved-memory
+  entries. The reserved-region boundaries match the gaps in the reported
+  System RAM ranges.
+- 2026-11-10: identified an ARMv8 generic timer in the DTS with a declared
+  clock frequency of 19.2 MHz and four timer interrupt entries.
+- 2026-11-10: identified a Qualcomm UARTDM v1.4 serial controller at
+  `0x078AF000`, with a register window of `0x200` bytes.
+- 2026-11-10: confirmed a PSCI 1.0 firmware interface using the `smc` method.
+  UART availability and physical debug-console access remain unverified.
+- 2026-11-10: successfully decompressed the gzip-compressed kernel extracted from `boot_b.img`. The decompressed ARM64 Linux Image is 33,916,952 bytes, with `ARM\x64` magic at offset `0x38`. SHA256: `11e292ece1a54ee2559dc155771fca70d44b66a685c49fb6cb5e15d3e3255484`.
+- 2026-11-10: located and extracted the appended DTB from the kernel payload. DTB offset: `0xBE92A4`. DTB size: 283,536 bytes. Verified FDT magic: `D0 0D FE ED`. Saved as `daisy.dtb`. SHA256: `bb4eb3b871a963fbaf06138a9adb3fba499e42e176ffa205e7337fe84ffa36e4`.
+- 2026-11-10: decompressed the gzip-compressed kernel from boot_b.img.
+  The decompressed ARM64 Linux Image is 33,916,952 bytes, with ARM\x64
+  magic at offset 0x38. SHA256:
+  11e292ece1a54ee2559dc155771fca70d44b66a685c49fb6cb5e15d3e3255484.
+  Found an appended FDT beginning with D0 0D FE ED. Its header reports
+  a total size of 283,536 bytes.
+- 2026-11-10: inspected the ARM64 kernel Image header in HxD. Found `ARM\x64` magic at offset `0x38`. Decoded header fields: text offset `0x80000`, image size `0x0236B000` (37,109,760 bytes), and flags `0xA`. Results are consistent with the standard ARM64 Linux Image format.
+- 2026-11-10: inspected `kernel_raw` in HxD. Found ARM64 Linux Image magic `41 52 4D 64` (`ARM\x64`) at offset `0x38`, confirming the extracted kernel uses the standard ARM64 Linux Image header format.
+- 2026-11-10: calculated SHA-256 hash of `kernel_raw`:
+  `d140e95c75c3b30bf76dc57ffa6892d0f7890cd3072c4b504b0e70f8a5d7dfc5`
 - 2026-11-10: investigated the device tree and identified additional hardware details, including the MSM8953 + PMI8950 platform, Cortex-A53 CPU configuration, KGSL GPU subsystem, MDSS display controllers, GICv2 interrupt controller, SDHCI storage controllers, and multiple touchscreen driver entries. Also examined the extracted `kernel_raw` and `ramdisk_raw`; no DTB magic (`0xd00dfeed`) was found in the inspected kernel data.
 - 2026-11-09: extracted boot_b.img now i have kernel and ramdisk.img i made them kernel_raw and ramdisk_raw there is no DTB Magic
 - 2026-11-08: backed up boot_a/b, aboot_a/b, persist, modemst1/2, fsg (sizes verified);
