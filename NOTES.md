@@ -65,6 +65,14 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+- **2026-11-10 — Daisy GICv2 implementation started:** Created `pexpert/pexpert/arm64/DAISY_GICv2.h` with initial ARM GICv2 Distributor and CPU-interface register offsets for the MSM8953.
+- Added the GICv2 header to `DAISY.h` and listed it in `pexpert/pexpert/arm64/Makefile`.
+- Confirmed the Daisy device-tree GIC regions: Distributor at `0x0B000000` and CPU interface at `0x0B002000`, each with a size of `0x1000`.
+- Traced `pe_arm_init_interrupts()` to `PE_init_platform()` in `pe_init.c`. The interrupt initialization call occurs in the VM-initialized branch.
+- Inspected the existing Apple interrupt-controller mapping code and confirmed it assumes an Apple-style `arm-io` layout, which Daisy does not provide.
+- **Current status:** GICv2 register definitions and board/build-file integration are in place. The attempted Daisy-specific mapping patch did not apply because its expected source formatting did not match; the file was confirmed unchanged after the failed attempt.
+- **Not yet completed:** GICv2 initialization, IRQ acknowledgement/EOI, interrupt dispatch, Cortex-A53 CPU-family support, and architectural timer integration.
+- **Build status:** XNU has not yet been compiled. No XNU code has been booted or executed on the device.
 - 2026-11-10 — Android Ramdisk and Init Analysis Confirmed `ramdisk.img` is gzip-compressed. Decompressed ramdisk size: 35,113,472 bytes. Identified the archive format as CPIO newc (`070701`). Listed the first 40 archive entries and identified important startup components, including `init`, `first_stage_ramdisk/`, `fstab.qcom`, `default.prop`, `bin/`, and `odm/`. Confirmed the top-level `init` entry is a symbolic link to `/system/bin/init`. Located `system/bin/init` inside the CPIO archive. Verified its file size is 2,693,872 bytes and permissions are `100755`. Confirmed the executable has ELF magic `7F 45 4C 46`. Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625. Parsed its ELF header:
   - ELF class: 64-bit
   - Endianness: little-endian
