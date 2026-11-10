@@ -65,12 +65,11 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
-- 2026-11-10 — Android Ramdisk and Init Analysis Confirmed `ramdisk.img` is gzip-compressed. Decompressed ramdisk size: 35,113,472 bytes. Identified the archive format as CPIO newc (`070701`). Listed the first 40 archive entries and identified important startup components, including `init`, `first_stage_ramdisk/`, `fstab.qcom`, `default.prop`, `bin/`, and `odm/`. Confirmed the top-level `init` entry is a symbolic link to `/system/bin/init`. Located `system/bin/init` inside the CPIO archive. Verified its file size is 2,693,872 bytes and permissions are `100755`. Confirmed the executable has ELF magic `7F 45 4C 46`. Parsed its ELF header:
+- 2026-11-10 — Android Ramdisk and Init Analysis Confirmed `ramdisk.img` is gzip-compressed. Decompressed ramdisk size: 35,113,472 bytes. Identified the archive format as CPIO newc (`070701`). Listed the first 40 archive entries and identified important startup components, including `init`, `first_stage_ramdisk/`, `fstab.qcom`, `default.prop`, `bin/`, and `odm/`. Confirmed the top-level `init` entry is a symbolic link to `/system/bin/init`. Located `system/bin/init` inside the CPIO archive. Verified its file size is 2,693,872 bytes and permissions are `100755`. Confirmed the executable has ELF magic `7F 45 4C 46`. Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625. Parsed its ELF header:
   - ELF class: 64-bit
   - Endianness: little-endian
   - Machine ID: 183 (`EM_AARCH64`)
   - Entry point: `0xBD000`
- Confirmed Android's init executable targets the same AArch64 architecture used by the Mi A2 Lite's Snapdragon 625.
 - 2026-11-10: mapped all 13 live device-tree memory-region
   references to their corresponding reserved-memory nodes
   using big-endian phandle values.
