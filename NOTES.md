@@ -65,6 +65,16 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+### November 12, 2026 — First Daisy-specific XNU syntax-check progress
+
+- Added a Daisy-specific Cortex-A53 cache-line configuration to `osfmk/arm64/proc_reg.h`.
+- Updated the standalone Clang syntax-check flags with `-DARM64_BOARD_CONFIG_DAISY`.
+- Successfully passed the previous `processor not supported` error, confirming the Daisy configuration is now selected by the compiler.
+- Remaining syntax-check blockers:
+  - `arm_neon_saved_state_t` is undefined in the selected ARM headers.
+  - The compiler cannot locate `string.h`.
+- The check still does **not** constitute a successful XNU build. No kernel image has been produced or booted yet.
+
 - **2026-11-10 — Daisy GICv2 implementation started:** Created `pexpert/pexpert/arm64/DAISY_GICv2.h` with initial ARM GICv2 Distributor and CPU-interface register offsets for the MSM8953.
 - Added the GICv2 header to `DAISY.h` and listed it in `pexpert/pexpert/arm64/Makefile`.
 - Confirmed the Daisy device-tree GIC regions: Distributor at `0x0B000000` and CPU interface at `0x0B002000`, each with a size of `0x1000`.
