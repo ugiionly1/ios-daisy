@@ -246,3 +246,15 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
   both milestones above reached.
 - 2026-11-08: extracted the IPSW; BuildManifest lists two device classes (d22ap, d221ap).
 - 2026-11-07: downloaded the iPhone X IPSW from ipsw.me.
+
+
+### November 13, 2026 — Daisy XNU patch assembled and applied to clean worktree
+
+- Created the local patch artifact `daisy-port.patch` for the XNU `xnu-8796.141.3` baseline.
+- The patch adds Daisy board selection and Cortex-A53 build flags, a Cortex-A53 CPU part identifier, provisional cache-line settings, Daisy board configuration headers, and initial MSM8953 GICv2 register mapping/accessor scaffolding.
+- Verified the patch against a fresh detached worktree at upstream commit `1b191cb58250d0705d8a51287127505aa4bc0789`: `git apply --check ..\\daisy-port.patch` completed without errors, then the patch applied successfully.
+- Verified `git diff --check` completed with no output in the patched worktree.
+- This supersedes the earlier November 10 note that the Daisy-specific mapping attempt had failed: the newer patch now includes a Daisy-specific GIC register mapping path.
+- **Still incomplete:** GICv2 distributor/CPU-interface initialization, wiring IRQ acknowledgement and EOI into XNU interrupt dispatch, MPM integration, architectural timer integration, and validation of provisional CPU/cache settings.
+- **Build status unchanged:** no complete XNU build has succeeded; no kernel image has been produced or booted; no XNU code has run on the phone.
+- The patch exists in the local worktree as `daisy-port.patch`; this log entry records the work but does not claim that the patch itself has been committed to this repository.
