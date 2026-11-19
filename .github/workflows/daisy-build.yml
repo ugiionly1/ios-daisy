@@ -1,0 +1,19 @@
+name: Daisy XNU Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check toolchain
+        run: |
+          xcodebuild -version
+          make --version
+      - name: Build Daisy
+        run: |
+          make SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" ARCH_CONFIGS=ARM64 KERNEL_CONFIGS=DEVELOPMENT MACHINE_CONFIGS=DAISY
