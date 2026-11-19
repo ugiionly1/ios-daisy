@@ -65,6 +65,21 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+### November 19, 2026 — First successful GitHub push
+
+- Committed initial Xiaomi Mi A2 Lite (`daisy`) XNU platform support.
+- Commit: `852c012`
+- Branch: `daisy-platform-bringup`
+- Pushed successfully to `ugiionly1/ios-daisy`.
+- Uploaded 38,964 Git objects (69.47 MiB).
+- Initial pushes failed because the local XNU clone was shallow.
+- Fixed by running `git fetch --unshallow origin`.
+- Verified the repository was no longer shallow.
+- Successfully pushed the branch and configured upstream tracking.
+
+**Milestone:** Initial Daisy platform source is now published on GitHub.
+
+**Status:** Source committed and pushed. XNU has not yet been built or booted on the Mi A2 Lite.
 ### November 13, 2026 — Daisy XNU patch assembled and applied to clean worktree
 
 - Created the local patch artifact `daisy-port.patch` for the XNU `xnu-8796.141.3` baseline.
