@@ -197,7 +197,9 @@ pe_arm_get_soc_base_phys(void)
 }
 
 extern void     fleh_fiq_generic(void);
-
+#if defined(DAISY)
+static vm_offset_t gGicCpuBase;
+#endif
 vm_offset_t     gPicBase;
 vm_offset_t     gTimerBase;
 vm_offset_t     gSocPhys;
@@ -520,7 +522,36 @@ pe_arm_init_debug(void *args)
 static uint32_t
 pe_arm_map_interrupt_controller(void)
 {
-	DTEntry         entryP;
+#if defined(DAISY)
+    gPicBase = ml_io_map(0x0B000000, 0x1000);
+    gGicCpuBase = ml_io_map(0x0B002000, 0x1000);
+
+    kprintf("Daisy GICv2: GICD mapped at 0x%lx\n",
+        (unsigned long)gPicBase);
+    kprintf("Daisy GICv2: GICC mapped at 0x%lx\n",
+        (unsigned long)gGicCpuBase);
+
+    if (gPicBase == 0 || gGicCpuBase == 0) {
+        kprintf("Daisy GICv2: MMIO mapping failed\n");
+        return 0;
+    }
+
+    /* Read-only GICv2 register diagnostics */
+    kprintf("Daisy GICv2: GICD_CTLR = 0x%x\n",
+        ml_io_read32(gPicBase + DAISY_GICD_CTLR));
+
+    kprintf("Daisy GICv2: GICD_TYPER = 0x%x\n",
+        ml_io_read32(gPicBase + DAISY_GICD_TYPER));
+
+    kprintf("Daisy GICv2: GICC_CTLR = 0x%x\n",
+        ml_io_read32(gGicCpuBase + DAISY_GICC_CTLR));
+
+    kprintf("Daisy GICv2: GICC_PMR = 0x%x\n",
+        ml_io_read32(gGicCpuBase + DAISY_GICC_PMR));
+
+    return 1;
+#else
+    DTEntry         entryP;
 	uintptr_t const *reg_prop;
 	uint32_t        prop_size;
 	vm_offset_t     soc_phys = 0;
@@ -556,8 +587,29 @@ pe_arm_map_interrupt_controller(void)
 	}
 
 	return 1;
+#endif /* DAISY */
+}
+#if defined(DAISY)
+unsigned int
+daisy_gicv2_acknowledge(void)
+{
+    if (gGicCpuBase == 0) {
+        return DAISY_GIC_SPURIOUS_IRQ;
+    }
+
+    return ml_io_read32(gGicCpuBase + DAISY_GICC_IAR);
 }
 
+void
+daisy_gicv2_end_interrupt(unsigned int acknowledge_value)
+{
+    if (gGicCpuBase == 0 || (acknowledge_value & 0x3FF) >= 1020) {
+        return;
+    }
+
+    ml_io_write32(gGicCpuBase + DAISY_GICC_EOIR, acknowledge_value);
+}
+#endif
 uint32_t
 pe_arm_init_interrupts(void *args)
 {

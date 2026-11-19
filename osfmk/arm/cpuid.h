@@ -110,6 +110,9 @@ typedef union {
 /* H4 (ARMv7 architecture) */
 #define CPU_PART_CORTEXA9           0xC09
 
+/* Cortex-A53 (ARMv8 architecture) */
+#define CPU_PART_CORTEXA53          0xD03
+
 /* H7 (ARMv8 architecture) */
 #define CPU_PART_TYPHOON            0x2
 

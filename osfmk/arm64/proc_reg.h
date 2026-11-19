@@ -221,6 +221,12 @@
 /* D-Cache. */
 #define MMU_CLINE   6
 
+#elif defined(DAISY)
+
+/* Qualcomm MSM8953 / Cortex-A53 */
+#define MMU_I_CLINE 6
+#define MMU_CLINE   6
+
 #else
 #error processor not supported
 #endif
