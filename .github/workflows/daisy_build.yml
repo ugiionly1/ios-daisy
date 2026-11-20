@@ -17,5 +17,6 @@ jobs:
           make --version
 
       - name: Build Daisy
+        working-directory: xnu
         run: |
           make SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" ARCH_CONFIGS=ARM64 KERNEL_CONFIGS=DEVELOPMENT MACHINE_CONFIGS=DAISY
