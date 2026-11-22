@@ -1,0 +1,249 @@
+diff --git a/makedefs/MakeInc.def b/makedefs/MakeInc.def
+index 5bd6f23d..47bb3b5f 100644
+--- a/makedefs/MakeInc.def
++++ b/makedefs/MakeInc.def
+@@ -29,7 +29,7 @@ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
+ else ifneq ($(findstring _host,$(RC_ProjectName)),)
+ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
+ else
+-SUPPORTED_ARM64_MACHINE_CONFIGS = BCM2837 T6000 T8101 T8103 VMAPPLE
++SUPPORTED_ARM64_MACHINE_CONFIGS = BCM2837 DAISY T6000 T8101 T8103 VMAPPLE
+ 
+ endif
+ 
+@@ -61,6 +61,7 @@ MACHINE_FLAGS_ARM64_T8103 = -DARM64_BOARD_CONFIG_T8103                  -mcpu=ap
+ MACHINE_FLAGS_ARM64_T6000 = -DARM64_BOARD_CONFIG_T6000 		-mcpu=apple-a14
+ MACHINE_FLAGS_ARM64_VMAPPLE = -DARM64_BOARD_CONFIG_VMAPPLE              -march=armv8.5a
+ MACHINE_FLAGS_ARM64_BCM2837 = -DARM64_BOARD_CONFIG_BCM2837
++MACHINE_FLAGS_ARM64_DAISY = -DARM64_BOARD_CONFIG_DAISY -mcpu=cortex-a53
+ 
+ 
+ #
+diff --git a/osfmk/arm/cpuid.h b/osfmk/arm/cpuid.h
+index be699218..10f1e5ef 100644
+--- a/osfmk/arm/cpuid.h
++++ b/osfmk/arm/cpuid.h
+@@ -110,6 +110,9 @@ typedef union {
+ /* H4 (ARMv7 architecture) */
+ #define CPU_PART_CORTEXA9           0xC09
+ 
++/* Cortex-A53 (ARMv8 architecture) */
++#define CPU_PART_CORTEXA53          0xD03
++
+ /* H7 (ARMv8 architecture) */
+ #define CPU_PART_TYPHOON            0x2
+ 
+diff --git a/osfmk/arm/pmap/pmap.h b/osfmk/arm/pmap/pmap.h
+index df672c65..05965e66 100644
+--- a/osfmk/arm/pmap/pmap.h
++++ b/osfmk/arm/pmap/pmap.h
+@@ -442,7 +442,7 @@ struct pmap {
+ #if HAS_APPLE_PAC
+ 	bool disable_jop;
+ #else
+-	bool reserved10;
++	bool reserved12;
+ #endif /* HAS_APPLE_PAC */
+ 
+ 	bool reserved11;
+diff --git a/osfmk/arm64/proc_reg.h b/osfmk/arm64/proc_reg.h
+index 133b07fd..0eb4707c 100644
+--- a/osfmk/arm64/proc_reg.h
++++ b/osfmk/arm64/proc_reg.h
+@@ -221,6 +221,12 @@
+ /* D-Cache. */
+ #define MMU_CLINE   6
+ 
++#elif defined(DAISY)
++
++/* Qualcomm MSM8953 / Cortex-A53 */
++#define MMU_I_CLINE 6
++#define MMU_CLINE   6
++
+ #else
+ #error processor not supported
+ #endif
+diff --git a/osfmk/arm64/sleh.c b/osfmk/arm64/sleh.c
+index c40c6eac..d906cf27 100644
+--- a/osfmk/arm64/sleh.c
++++ b/osfmk/arm64/sleh.c
+@@ -1972,7 +1972,6 @@ sleh_fiq(arm_saved_state_t *state)
+ 		__builtin_arm_isb(ISB_SY);
+ 	}
+ #endif
+-
+ 	sleh_interrupt_handler_epilogue();
+ #if MACH_ASSERT
+ 	if (preemption_level != sleh_get_preemption_level()) {
+diff --git a/pexpert/arm/pe_identify_machine.c b/pexpert/arm/pe_identify_machine.c
+index aa75c0af..1731a4e4 100644
+--- a/pexpert/arm/pe_identify_machine.c
++++ b/pexpert/arm/pe_identify_machine.c
+@@ -197,7 +197,9 @@ pe_arm_get_soc_base_phys(void)
+ }
+ 
+ extern void     fleh_fiq_generic(void);
+-
++#if defined(DAISY)
++static vm_offset_t gGicCpuBase;
++#endif
+ vm_offset_t     gPicBase;
+ vm_offset_t     gTimerBase;
+ vm_offset_t     gSocPhys;
+@@ -520,7 +522,36 @@ pe_arm_init_debug(void *args)
+ static uint32_t
+ pe_arm_map_interrupt_controller(void)
+ {
+-	DTEntry         entryP;
++#if defined(DAISY)
++    gPicBase = ml_io_map(0x0B000000, 0x1000);
++    gGicCpuBase = ml_io_map(0x0B002000, 0x1000);
++
++    kprintf("Daisy GICv2: GICD mapped at 0x%lx\n",
++        (unsigned long)gPicBase);
++    kprintf("Daisy GICv2: GICC mapped at 0x%lx\n",
++        (unsigned long)gGicCpuBase);
++
++    if (gPicBase == 0 || gGicCpuBase == 0) {
++        kprintf("Daisy GICv2: MMIO mapping failed\n");
++        return 0;
++    }
++
++    /* Read-only GICv2 register diagnostics */
++    kprintf("Daisy GICv2: GICD_CTLR = 0x%x\n",
++        ml_io_read32(gPicBase + DAISY_GICD_CTLR));
++
++    kprintf("Daisy GICv2: GICD_TYPER = 0x%x\n",
++        ml_io_read32(gPicBase + DAISY_GICD_TYPER));
++
++    kprintf("Daisy GICv2: GICC_CTLR = 0x%x\n",
++        ml_io_read32(gGicCpuBase + DAISY_GICC_CTLR));
++
++    kprintf("Daisy GICv2: GICC_PMR = 0x%x\n",
++        ml_io_read32(gGicCpuBase + DAISY_GICC_PMR));
++
++    return 1;
++#else
++    DTEntry         entryP;
+ 	uintptr_t const *reg_prop;
+ 	uint32_t        prop_size;
+ 	vm_offset_t     soc_phys = 0;
+@@ -556,8 +587,29 @@ pe_arm_map_interrupt_controller(void)
+ 	}
+ 
+ 	return 1;
++#endif /* DAISY */
+ }
++#if defined(DAISY)
++unsigned int
++daisy_gicv2_acknowledge(void)
++{
++    if (gGicCpuBase == 0) {
++        return DAISY_GIC_SPURIOUS_IRQ;
++    }
+ 
++    return ml_io_read32(gGicCpuBase + DAISY_GICC_IAR);
++}
++
++void
++daisy_gicv2_end_interrupt(unsigned int acknowledge_value)
++{
++    if (gGicCpuBase == 0 || (acknowledge_value & 0x3FF) >= 1020) {
++        return;
++    }
++
++    ml_io_write32(gGicCpuBase + DAISY_GICC_EOIR, acknowledge_value);
++}
++#endif
+ uint32_t
+ pe_arm_init_interrupts(void *args)
+ {
+diff --git a/pexpert/pexpert/arm64/Makefile b/pexpert/pexpert/arm64/Makefile
+index 8226b8cd..d110e438 100644
+--- a/pexpert/pexpert/arm64/Makefile
++++ b/pexpert/pexpert/arm64/Makefile
+@@ -17,7 +17,9 @@ PRIVATE_KERNELFILES = \
+ 	boot.h \
+ 	H13.h \
+ 	VMAPPLE.h \
+-	BCM2837.h
++        BCM2837.h \
++        DAISY.h \
++        DAISY_GICv2.h
+ 
+ 
+ # Headers installed into System.framework/PrivateHeaders (userspace internal SDK only).
+diff --git a/pexpert/pexpert/arm64/board_config.h b/pexpert/pexpert/arm64/board_config.h
+index 94545341..8b8f9575 100644
+--- a/pexpert/pexpert/arm64/board_config.h
++++ b/pexpert/pexpert/arm64/board_config.h
+@@ -87,6 +87,14 @@
+ 
+ 
+ 
++#ifdef ARM64_BOARD_CONFIG_DAISY
++#include <pexpert/arm64/DAISY.h>
++
++#define MAX_L2_CLINE                   6
++#define MAX_CPUS                       8
++#define MAX_CPU_CLUSTERS               2
++#endif  /* ARM64_BOARD_CONFIG_DAISY */
++
+ #ifdef ARM64_BOARD_CONFIG_BCM2837
+ #include <pexpert/arm64/BCM2837.h>
+ 
+diff --git a/pexpert/pexpert/arm64/DAISY.h b/pexpert/pexpert/arm64/DAISY.h
+new file mode 100644
+index 00000000..3aa3c337
+--- /dev/null
++++ b/pexpert/pexpert/arm64/DAISY.h
+@@ -0,0 +1,10 @@
++#ifndef _PEXPERT_ARM64_DAISY_H
++#define _PEXPERT_ARM64_DAISY_H
++
++#include <pexpert/arm64/DAISY_GICv2.h>
++
++#define DAISY
++#define DAISY_MSM8953
++#define ARM_ARCH_TIMER
++
++#endif /* _PEXPERT_ARM64_DAISY_H */
+diff --git a/pexpert/pexpert/arm64/DAISY_GICv2.h b/pexpert/pexpert/arm64/DAISY_GICv2.h
+new file mode 100644
+index 00000000..c4eefa04
+--- /dev/null
++++ b/pexpert/pexpert/arm64/DAISY_GICv2.h
+@@ -0,0 +1,33 @@
++
++#ifndef _PEXPERT_ARM64_DAISY_GICV2_H
++#define _PEXPERT_ARM64_DAISY_GICV2_H
++
++/* Qualcomm MSM8953 Daisy: ARM GICv2 */
++
++/* Distributor registers */
++#define DAISY_GICD_CTLR       0x0000
++#define DAISY_GICD_TYPER      0x0004
++#define DAISY_GICD_IGROUPR          0x0080
++
++#define DAISY_GICD_CTLR_ENABLEGRP0  (1U << 0)
++#define DAISY_GICD_CTLR_ENABLEGRP1  (1U << 1)
++#define DAISY_GICD_ISENABLER  0x0100
++#define DAISY_GICD_ICENABLER  0x0180
++#define DAISY_GICD_IPRIORITYR 0x0400
++#define DAISY_GICD_ITARGETSR  0x0800
++#define DAISY_GICD_ICFGR      0x0C00
++
++/* CPU interface registers */
++#define DAISY_GICC_CTLR       0x0000
++#define DAISY_GICC_PMR        0x0004
++#define DAISY_GICC_BPR        0x0008
++#define DAISY_GICC_IAR        0x000C
++#define DAISY_GICC_EOIR       0x0010
++
++#define DAISY_GIC_SPURIOUS_IRQ 1023
++
++/* Daisy GICv2 accessors, implemented in pe_identify_machine.c */
++unsigned int daisy_gicv2_acknowledge(void);
++void daisy_gicv2_end_interrupt(unsigned int acknowledge_value);
++
++#endif /* _PEXPERT_ARM64_DAISY_GICV2_H */

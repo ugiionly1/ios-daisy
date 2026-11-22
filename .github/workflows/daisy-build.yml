@@ -5,15 +5,32 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-15-intel
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout ios-daisy
+        uses: actions/checkout@v4
+
+      - name: Checkout upstream XNU
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          repository: apple-oss-distributions/xnu
+          ref: xnu-8796.141.3
+          path: xnu
+
       - name: Check toolchain
         run: |
           xcodebuild -version
           make --version
-      - name: Build Daisy
+
+      - name: Apply Daisy patch
+        working-directory: xnu
         run: |
-          make SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" ARCH_CONFIGS=ARM64 KERNEL_CONFIGS=DEVELOPMENT MACHINE_CONFIGS=DAISY
+          git apply --check ../patches/daisy-build.patch
+          git apply ../patches/daisy-build.patch
+
+      - name: Build Daisy XNU
+        run: |
+          make -C xnu \
+            SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"
