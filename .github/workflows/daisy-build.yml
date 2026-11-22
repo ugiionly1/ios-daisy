@@ -19,10 +19,18 @@ jobs:
           ref: xnu-8796.141.3
           path: xnu
 
+      - name: Checkout AvailabilityVersions
+        uses: actions/checkout@v4
+        with:
+          repository: apple-oss-distributions/AvailabilityVersions
+          path: AvailabilityVersions
+
       - name: Check toolchain
         run: |
           xcodebuild -version
           make --version
+          cmake --version
+          ninja --version
 
       - name: Apply Daisy patch
         working-directory: xnu
@@ -30,18 +38,33 @@ jobs:
           git apply --check ../patches/daisy-build.patch
           git apply ../patches/daisy-build.patch
 
-      - name: Inspect SDK availability tool
+      - name: Build Apple availability tool
+        run: |
+          make -C AvailabilityVersions install
+
+          AVAILABILITY_TOOL="AvailabilityVersions/dst/usr/local/libexec/availability.pl"
+
+          test -x "$AVAILABILITY_TOOL"
+
+          "$AVAILABILITY_TOOL" --ios
+          "$AVAILABILITY_TOOL" --macosx
+
+      - name: Install availability tool into SDK
         run: |
           SDK="$(xcrun --sdk macosx --show-sdk-path)"
-          echo "SDKROOT=$SDK"
-          echo "DRIVERKITROOT=${DRIVERKITROOT:-<empty>}"
-          find "$SDK" -name availability.pl -print
-          ls -l "$SDK/usr/local/libexec/" || true
+          AVAILABILITY_TOOL="AvailabilityVersions/dst/usr/local/libexec/availability.pl"
 
-      - name: Search Xcode for availability.pl
+          sudo mkdir -p "$SDK/usr/local/libexec"
+          sudo install -m 755 "$AVAILABILITY_TOOL" \
+            "$SDK/usr/local/libexec/availability.pl"
+
+          test -x "$SDK/usr/local/libexec/availability.pl"
+
+      - name: Verify SDK availability tool
         run: |
-          find /Applications/Xcode_16.4.app -name availability.pl -print 2>/dev/null || true
-          find /Library/Developer -name availability.pl -print 2>/dev/null || true
+          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+          "$SDK/usr/local/libexec/availability.pl" --ios
+          "$SDK/usr/local/libexec/availability.pl" --macosx
 
       - name: Build Daisy XNU
         run: |
