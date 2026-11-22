@@ -65,6 +65,25 @@ Running log for ios-daisy (iOS 16 on Xiaomi Mi A2 Lite, daisy, MSM8953).
 - Stock LK accepts `fastboot boot` of a header-v0 image, including edited ones
 
 ## Log
+### November 22, 2026 — Daisy build configuration identified
+
+- Investigated the upstream XNU build system to determine how to select the custom Daisy machine configuration.
+- Traced `CURRENT_MACHINE_CONFIG` through `CURRENT_BUILD_CONFIG`.
+- Located the build configuration generation functions in `makedefs/MakeInc.cmd`.
+- Confirmed `TARGET_CONFIGS` accepts groups of three parameters:
+  1. Kernel configuration
+  2. Architecture configuration
+  3. Machine configuration
+- Confirmed the intended Daisy configuration:
+
+  `TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"`
+
+- Expected internal build configuration: `DEVELOPMENT^ARM64^DAISY`.
+- Confirmed that `CURRENT_MACHINE_CONFIG` is extracted from this configuration and passed to the recursive build.
+
+**Next:** Verify platform requirements and configure GitHub Actions for the first actual XNU compilation.
+
+**Build status:** Configuration syntax confirmed. Compilation has not started.
 ### November 19, 2026 — First successful GitHub push
 
 - Committed initial Xiaomi Mi A2 Lite (`daisy`) XNU platform support.
