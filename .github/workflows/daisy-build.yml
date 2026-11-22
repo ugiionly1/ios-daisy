@@ -1,3 +1,4 @@
+
 name: Daisy XNU Build
 
 on:
@@ -36,6 +37,11 @@ jobs:
           echo "DRIVERKITROOT=${DRIVERKITROOT:-<empty>}"
           find "$SDK" -name availability.pl -print
           ls -l "$SDK/usr/local/libexec/" || true
+
+      - name: Search Xcode for availability.pl
+        run: |
+          find /Applications/Xcode_16.4.app -name availability.pl -print 2>/dev/null || true
+          find /Library/Developer -name availability.pl -print 2>/dev/null || true
 
       - name: Build Daisy XNU
         run: |
