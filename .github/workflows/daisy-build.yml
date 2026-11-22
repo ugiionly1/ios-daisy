@@ -90,9 +90,12 @@ jobs:
               print("Flag not found in source files.")
           PY
 
-      - name: Diagnose missing headers
+      - name: Diagnose SDK and headers
         run: |
           SDK="$(xcrun --sdk macosx --show-sdk-path)"
+
+          echo "=== SDK path ==="
+          echo "$SDK"
 
           echo "=== SDK kernel include ==="
           ls -ld "$SDK/usr/local/include/kernel" || true
@@ -101,7 +104,7 @@ jobs:
           ls -ld "$SDK/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/platform" || true
 
           echo "=== XNU exported headers ==="
-          find xnu/BUILD/obj/EXPORT_HDRS -maxdepth 2 -type d -print 2>/dev/null || true
+          find xnu/BUILD/obj/EXPORT_HDRS -maxdepth 3 -type d -print 2>/dev/null || true
 
           echo "=== Kernel SDK directories ==="
           find /Library/Developer/KDKs -maxdepth 3 -type d -print 2>/dev/null || true
@@ -115,8 +118,36 @@ jobs:
           make -C xnu \
             TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"
 
+      - name: Collect genassym diagnostics
+        if: always()
+        run: |
+          echo "=== genassym reproduction scripts ==="
+          find /var/folders -type f -name 'genassym-*.sh' \
+            -exec sh -c 'echo "=== $1 ==="; cat "$1"' _ {} \; \
+            2>/dev/null || true
+
+          echo "=== generated preprocessed source ==="
+          find /var/folders -type f -name 'genassym-*.c' \
+            -exec ls -lh {} \; 2>/dev/null || true
+
+          echo "=== Clang crash reports ==="
+          find /Users/runner/Library/Logs/DiagnosticReports \
+            -type f -name 'clang*.crash' \
+            -print 2>/dev/null || true
+
+          for file in /Users/runner/Library/Logs/DiagnosticReports/clang*.crash; do
+            if [ -f "$file" ]; then
+              echo "=== $file ==="
+              head -n 120 "$file"
+            fi
+          done
+
       - name: Show build outputs
         if: always()
         run: |
-          echo "Checking XNU build directory"
-          find xnu/BUILD -type f \( -name "kernel" -o -name "*.bin" -o -name "*.mach" \) -print 2>/dev/null || true
+          echo "=== XNU build outputs ==="
+          find xnu/BUILD -type f \( \
+            -name "kernel" -o \
+            -name "*.bin" -o \
+            -name "*.mach" \
+          \) -print 2>/dev/null || true
