@@ -92,13 +92,12 @@ jobs:
 
       - name: Build Daisy XNU
         run: |
-          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+          export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+          export CC="$(xcrun --find clang)"
+          export CXX="$(xcrun --find clang++)"
 
           make -C xnu \
-            SDKROOT="$SDK" \
-            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY" \
-            CFLAGS="-Wno-error=missing-include-dirs" \
-            CXXFLAGS="-Wno-error=missing-include-dirs"
+            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"
 
       - name: Show build outputs
         if: always()
