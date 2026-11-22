@@ -87,8 +87,24 @@ jobs:
               print(path)
 
           if not changed:
-              print("Flag not found in source files; checking generated build configuration.")
+              print("Flag not found in source files.")
           PY
+
+      - name: Diagnose missing headers
+        run: |
+          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+
+          echo "=== SDK kernel include ==="
+          ls -ld "$SDK/usr/local/include/kernel" || true
+
+          echo "=== SDK private platform headers ==="
+          ls -ld "$SDK/System/Library/Frameworks/Kernel.framework/Versions/A/PrivateHeaders/platform" || true
+
+          echo "=== XNU exported headers ==="
+          find xnu/BUILD/obj/EXPORT_HDRS -maxdepth 2 -type d -print 2>/dev/null || true
+
+          echo "=== Kernel SDK directories ==="
+          find /Library/Developer/KDKs -maxdepth 3 -type d -print 2>/dev/null || true
 
       - name: Build Daisy XNU
         run: |
