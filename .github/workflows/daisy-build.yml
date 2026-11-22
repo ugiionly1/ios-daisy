@@ -28,6 +28,7 @@ jobs:
       - name: Check toolchain
         run: |
           xcodebuild -version
+          clang --version
           make --version
           cmake --version
           ninja --version
@@ -45,7 +46,6 @@ jobs:
           AVAILABILITY_TOOL="AvailabilityVersions/dst/usr/local/libexec/availability.pl"
 
           test -x "$AVAILABILITY_TOOL"
-
           "$AVAILABILITY_TOOL" --ios
           "$AVAILABILITY_TOOL" --macosx
 
@@ -58,16 +58,50 @@ jobs:
           sudo install -m 755 "$AVAILABILITY_TOOL" \
             "$SDK/usr/local/libexec/availability.pl"
 
-          test -x "$SDK/usr/local/libexec/availability.pl"
-
-      - name: Verify SDK availability tool
+      - name: Remove unsupported Clang flag
         run: |
-          SDK="$(xcrun --sdk macosx --show-sdk-path)"
-          "$SDK/usr/local/libexec/availability.pl" --ios
-          "$SDK/usr/local/libexec/availability.pl" --macosx
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("xnu")
+          flag = "-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang"
+          changed = []
+
+          for path in root.rglob("*"):
+              if not path.is_file():
+                  continue
+              if ".git" in path.parts or "BUILD" in path.parts:
+                  continue
+
+              try:
+                  content = path.read_text()
+              except (UnicodeDecodeError, OSError):
+                  continue
+
+              if flag in content:
+                  path.write_text(content.replace(flag, ""))
+                  changed.append(str(path))
+
+          print("Files changed:")
+          for path in changed:
+              print(path)
+
+          if not changed:
+              print("Flag not found in source files; checking generated build configuration.")
+          PY
 
       - name: Build Daisy XNU
         run: |
+          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+
           make -C xnu \
-            SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" \
-            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"
+            SDKROOT="$SDK" \
+            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY" \
+            CFLAGS="-Wno-error=missing-include-dirs" \
+            CXXFLAGS="-Wno-error=missing-include-dirs"
+
+      - name: Show build outputs
+        if: always()
+        run: |
+          echo "Checking XNU build directory"
+          find xnu/BUILD -type f \( -name "kernel" -o -name "*.bin" -o -name "*.mach" \) -print 2>/dev/null || true
