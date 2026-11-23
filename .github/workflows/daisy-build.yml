@@ -116,7 +116,8 @@ jobs:
           export CXX="$(xcrun --find clang++)"
 
           make -C xnu \
-            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY"
+            TARGET_CONFIGS="DEVELOPMENT ARM64 DAISY" \
+            exporthdrs all
 
       - name: Collect genassym diagnostics
         if: always()
