@@ -1,5 +1,5 @@
 diff --git a/makedefs/MakeInc.def b/makedefs/MakeInc.def
-index 5bd6f23d..87632cde 100644
+index 5bd6f23d..dde5e22d 100644
 --- a/makedefs/MakeInc.def
 +++ b/makedefs/MakeInc.def
 @@ -29,7 +29,7 @@ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
@@ -29,7 +29,23 @@ index 5bd6f23d..87632cde 100644
  
  # Hand-written sign conversion diagnostics are resolved, but the
  # auto-generated ones need mig and iig to be updated to fix.  Disable the
-@@ -884,8 +886,8 @@ INCFLAGS_IMPORT	= $(patsubst %, -I$(OBJROOT)/EXPORT_HDRS/%, $(COMPONENT_IMPORT_L
+@@ -184,6 +186,15 @@ WARNFLAGS_STD := $(WARNFLAGS_STD) \
+ 	-Wno-sign-compare \
+ 	-Wno-sign-conversion
+ 
++WARNFLAGS_STD := $(WARNFLAGS_STD) \
++	-Wno-error=cast-function-type-strict \
++	-Wno-error=missing-designated-field-initializers \
++	-Wno-error=suggest-override \
++	-Wno-error=suggest-destructor-override \
++	-Wno-error=format \
++	-Wno-error=unused-but-set-variable \
++	-Wno-error=switch-default
++
+ # Opt-ins:
+ WARNFLAGS_STD := $(WARNFLAGS_STD) \
+ 	-Wpointer-arith \
+@@ -884,8 +895,8 @@ INCFLAGS_IMPORT	= $(patsubst %, -I$(OBJROOT)/EXPORT_HDRS/%, $(COMPONENT_IMPORT_L
  INCFLAGS_EXTERN	= -I$(SRCROOT)/EXTERNAL_HEADERS
  INCFLAGS_GEN	= -I$(SRCROOT)/$(COMPONENT) -I$(OBJROOT)/EXPORT_HDRS/$(COMPONENT)
  INCFLAGS_LOCAL	= -I.
