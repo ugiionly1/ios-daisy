@@ -1,5 +1,5 @@
 diff --git a/makedefs/MakeInc.def b/makedefs/MakeInc.def
-index 5bd6f23d..47bb3b5f 100644
+index 5bd6f23d..b37cfe93 100644
 --- a/makedefs/MakeInc.def
 +++ b/makedefs/MakeInc.def
 @@ -29,7 +29,7 @@ SUPPORTED_ARM64_MACHINE_CONFIGS = NONE
@@ -19,6 +19,17 @@ index 5bd6f23d..47bb3b5f 100644
  
  
  #
+@@ -884,8 +885,8 @@ INCFLAGS_IMPORT	= $(patsubst %, -I$(OBJROOT)/EXPORT_HDRS/%, $(COMPONENT_IMPORT_L
+ INCFLAGS_EXTERN	= -I$(SRCROOT)/EXTERNAL_HEADERS
+ INCFLAGS_GEN	= -I$(SRCROOT)/$(COMPONENT) -I$(OBJROOT)/EXPORT_HDRS/$(COMPONENT)
+ INCFLAGS_LOCAL	= -I.
+-INCFLAGS_SDK	= -I$(SDKROOT)/usr/local/include/kernel
+-INCFLAGS_PLATFORM = -I$(SDKROOT)/$(KPINCDIR)/platform
++INCFLAGS_SDK = $(if $(wildcard $(SDKROOT)/usr/local/include/kernel),-I$(SDKROOT)/usr/local/include/kernel)
++INCFLAGS_PLATFORM = $(if $(wildcard $(SDKROOT)/$(KPINCDIR)/platform),-I$(SDKROOT)/$(KPINCDIR)/platform)
+ 
+ INCFLAGS	= $(INCFLAGS_LOCAL) $(INCFLAGS_GEN) $(INCFLAGS_IMPORT) $(INCFLAGS_EXTERN) $(INCFLAGS_MAKEFILE) $(INCFLAGS_SDK) $(INCFLAGS_PLATFORM)
+ 
 diff --git a/makedefs/MakeInc.rule b/makedefs/MakeInc.rule
 index 59e4063b..053d2a70 100644
 --- a/makedefs/MakeInc.rule
