@@ -19,6 +19,19 @@ index 5bd6f23d..47bb3b5f 100644
  
  
  #
+diff --git a/makedefs/MakeInc.rule b/makedefs/MakeInc.rule
+index 59e4063b..053d2a70 100644
+--- a/makedefs/MakeInc.rule
++++ b/makedefs/MakeInc.rule
+@@ -375,7 +375,7 @@ $(EXPORT_MD_INC_FILES): $(OBJROOT)/$(EXPDIR)/$(EXPORT_MD_DIR)/% : $(SOURCE)/% |
+ 
+ .PHONY: do_exporthdrs_mi
+ 
+-do_exporthdrs_mi: $(EXPORT_MI_GEN_INC_FILES) $(EXPORT_MI_INC_FILES)
++do_exporthdrs_mi: EXP_MI_INC_DIR $(EXPORT_MI_GEN_INC_FILES) $(EXPORT_MI_INC_FILES)
+ 	@:
+ 
+ .PHONY: do_exporthdrs_md
 diff --git a/osfmk/arm/cpuid.h b/osfmk/arm/cpuid.h
 index be699218..10f1e5ef 100644
 --- a/osfmk/arm/cpuid.h
@@ -158,40 +171,6 @@ index aa75c0af..1731a4e4 100644
  uint32_t
  pe_arm_init_interrupts(void *args)
  {
-diff --git a/pexpert/pexpert/arm64/Makefile b/pexpert/pexpert/arm64/Makefile
-index 8226b8cd..d110e438 100644
---- a/pexpert/pexpert/arm64/Makefile
-+++ b/pexpert/pexpert/arm64/Makefile
-@@ -17,7 +17,9 @@ PRIVATE_KERNELFILES = \
- 	boot.h \
- 	H13.h \
- 	VMAPPLE.h \
--	BCM2837.h
-+        BCM2837.h \
-+        DAISY.h \
-+        DAISY_GICv2.h
- 
- 
- # Headers installed into System.framework/PrivateHeaders (userspace internal SDK only).
-diff --git a/pexpert/pexpert/arm64/board_config.h b/pexpert/pexpert/arm64/board_config.h
-index 94545341..8b8f9575 100644
---- a/pexpert/pexpert/arm64/board_config.h
-+++ b/pexpert/pexpert/arm64/board_config.h
-@@ -87,6 +87,14 @@
- 
- 
- 
-+#ifdef ARM64_BOARD_CONFIG_DAISY
-+#include <pexpert/arm64/DAISY.h>
-+
-+#define MAX_L2_CLINE                   6
-+#define MAX_CPUS                       8
-+#define MAX_CPU_CLUSTERS               2
-+#endif  /* ARM64_BOARD_CONFIG_DAISY */
-+
- #ifdef ARM64_BOARD_CONFIG_BCM2837
- #include <pexpert/arm64/BCM2837.h>
- 
 diff --git a/pexpert/pexpert/arm64/DAISY.h b/pexpert/pexpert/arm64/DAISY.h
 new file mode 100644
 index 00000000..3aa3c337
@@ -247,3 +226,37 @@ index 00000000..c4eefa04
 +void daisy_gicv2_end_interrupt(unsigned int acknowledge_value);
 +
 +#endif /* _PEXPERT_ARM64_DAISY_GICV2_H */
+diff --git a/pexpert/pexpert/arm64/Makefile b/pexpert/pexpert/arm64/Makefile
+index 8226b8cd..d110e438 100644
+--- a/pexpert/pexpert/arm64/Makefile
++++ b/pexpert/pexpert/arm64/Makefile
+@@ -17,7 +17,9 @@ PRIVATE_KERNELFILES = \
+ 	boot.h \
+ 	H13.h \
+ 	VMAPPLE.h \
+-	BCM2837.h
++        BCM2837.h \
++        DAISY.h \
++        DAISY_GICv2.h
+ 
+ 
+ # Headers installed into System.framework/PrivateHeaders (userspace internal SDK only).
+diff --git a/pexpert/pexpert/arm64/board_config.h b/pexpert/pexpert/arm64/board_config.h
+index 94545341..8b8f9575 100644
+--- a/pexpert/pexpert/arm64/board_config.h
++++ b/pexpert/pexpert/arm64/board_config.h
+@@ -87,6 +87,14 @@
+ 
+ 
+ 
++#ifdef ARM64_BOARD_CONFIG_DAISY
++#include <pexpert/arm64/DAISY.h>
++
++#define MAX_L2_CLINE                   6
++#define MAX_CPUS                       8
++#define MAX_CPU_CLUSTERS               2
++#endif  /* ARM64_BOARD_CONFIG_DAISY */
++
+ #ifdef ARM64_BOARD_CONFIG_BCM2837
+ #include <pexpert/arm64/BCM2837.h>
+ 
