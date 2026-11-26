@@ -108,7 +108,13 @@ jobs:
 
           echo "=== Kernel SDK directories ==="
           find /Library/Developer/KDKs -maxdepth 3 -type d -print 2>/dev/null || true
-
+      
+      - name: Check IIG
+        run: |
+          IIG="$(xcrun -sdk macosx -find iig)"
+          echo "IIG path: $IIG"
+          "$IIG" --version || true
+      
       - name: Build Daisy XNU
         run: |
           export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
